@@ -1,0 +1,53 @@
+# Compiled class files
+target/
+bin/
+
+# Maven-specific files
+.mvn/wrapper/maven-wrapper.jar
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+./.flattened-pom.xml
+
+# Gradle-specific files (if using Gradle)
+.gradle/
+build/
+.project
+.classpath
+.settings/
+
+# IDE-specific files
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+
+# Sensitive configuration files (e.g., database credentials)
+application*.properties
+application*.yml
+!application.properties # Keep default application.properties if it's not sensitive
+!application.yml # Keep default application.yml if it's not sensitive
+
+# Spring Boot specific
+*.jar
+*.war
+*.zip
+*.tar.gz
+
+# Other
+.factorypathgit 
