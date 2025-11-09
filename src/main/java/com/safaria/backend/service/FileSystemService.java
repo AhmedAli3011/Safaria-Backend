@@ -9,6 +9,7 @@ import java.util.Base64;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class FileSystemService {
@@ -21,12 +22,31 @@ public class FileSystemService {
         return Base64.getDecoder().decode(base64String);
     }
 
-    public void storeFile(byte[] fileData, String relativePath) throws IOException {
-        Path filePath = Paths.get(uploadDir, relativePath);
+    public void storeFile(byte[] fileData, String relativeFilePath)  {
+        try
+        {
+        Path filePath = Paths.get(uploadDir, relativeFilePath);
         Files.write(filePath, fileData, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+       }
+        catch(IOException ex)
+        {
+            throw new RuntimeException("Failed to read file from path: "+relativeFilePath, ex);
+        }
 
     }
+    public boolean isJpeg(MultipartFile file) 
 
+    {
+    String contentType = file.getContentType();
+    return contentType != null&&"image/jpeg".equalsIgnoreCase(contentType);
+        
+    }
+    public boolean isPdf(MultipartFile file) 
+    {
+    String contentType = file.getContentType();
+    return contentType != null&&contentType.equals("application/pdf");
+        
+    }
     public String generateUniqueFileName(String relativePath, String extension) {
         Path directory = Paths.get(uploadDir).resolve(relativePath);
 
@@ -45,9 +65,15 @@ public class FileSystemService {
         return fileName;
     }
 
-    public byte[] getFileBytesFromPath(String relativeFilePath) throws IOException {
+    public byte[] getFileBytesFromPath(String relativeFilePath)  {
+        try
+        {
         Path filePath = Paths.get(uploadDir).resolve(relativeFilePath);
-        return Files.readAllBytes(filePath);
+        return Files.readAllBytes(filePath);}
+        catch(IOException ex)
+        {
+            throw new RuntimeException("Failed to read file from path: "+relativeFilePath, ex);
+        }
     }
 
 }

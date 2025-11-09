@@ -4,26 +4,28 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.safaria.backend.DTO.TouristSignUpDTO;
+import com.safaria.backend.entity.Role;
+import com.safaria.backend.entity.User;
+import com.safaria.backend.repository.UserRepository;
 
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-
-class SignUpTests {
+@Transactional // each test runs in a transaction and will be rolled back after the test
+@ContextConfiguration(classes = TestConfig.class)
+public class SignUpTests {
 
     @Autowired
     private MockMvc mockMvc;
@@ -31,183 +33,152 @@ class SignUpTests {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    // 1 - invalid email format -> validation failure
     @Test
     @Order(1)
-    void testSignupAsTourist() throws Exception {
-        // Tourist request (No extra fields required)
-        String touristRequest = """
-        {
-            "username": "john_doe",
-            "password": "securePassword123",
-            "email": "john.doe@gmail.com",
-            "phone": "1234567890",
-            "country": "USA",
-            "tourismTypes": ["adventure", "cultural", "eco-tourism"]
-        }
-        """;
-
-        mockMvc.perform(post("/api/touristsignup")
+    void testEmailFormat_Invalid() throws Exception {
+        TouristSignUpDTO dto = new TouristSignUpDTO();
+        dto.setName("John");
+        dto.setEmail("invalid-email");
+        dto.setPassword("password123");
+        mockMvc.perform(post("/api/auth/signup/tourists")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(touristRequest))
-                .andExpect(status().isOk());
+                .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isBadRequest());
     }
 
+    // 2 - password length < 8 -> validation failure
     @Test
     @Order(2)
-    void testSignupAsTourGuide() throws Exception {
-        // Mock file representing the approval document
-        MockMultipartFile approvalDocument = new MockMultipartFile(
-                "approvalDocument", // Field name
-                "license.pdf", // File name
-                "application/pdf", // MIME type
-                "dummy file content".getBytes() // File content as bytes
-        );
-
-        mockMvc.perform(multipart("/api/tourguidesignup")
-                .file(approvalDocument)
-                .param("username", "jane_guide")
-                .param("password", "strongPass456")
-                .param("email", "jane.guide@gmail.com")
-                .param("phone", "9876543210")
-                .param("country", "France")
-                .param("tourismTypes", "[\"adventure\", \"cultural\", \"eco-tourism\"]")
-                .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isOk());
+    void testPasswordTooShort() throws Exception {
+        TouristSignUpDTO dto = new TouristSignUpDTO();
+        dto.setName("John");
+        dto.setEmail("john@example.com");
+        dto.setPassword("short"); // < 8
+        mockMvc.perform(post("/api/auth/signup/tourists")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isBadRequest());
     }
 
+    // 3 - name not blank -> validation failure
     @Test
     @Order(3)
-    void testSignupAsCompany() throws Exception {
-        // Create a mock file for the business license document
-        MockMultipartFile approvalDocument = new MockMultipartFile(
-                "approvalDocument", // Field name
-                "license.pdf", // File name
-                "application/pdf", // MIME type
-                "dummy file content".getBytes() // File content as bytes
-        );
-
-        // Send multipart form-data request
-        mockMvc.perform(multipart("/api/companysignup")
-                .file(approvalDocument)
-                .param("username", "travel_company")
-                .param("password", "securePass789")
-                .param("email", "info@gmail.com")
-                .param("phone", "1234567890")
-                .param("tourismTypes", "[\"adventure\", \"cultural\", \"eco-tourism\"]")
-                .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isOk());
+    void testNameNotBlank() throws Exception {
+        TouristSignUpDTO dto = new TouristSignUpDTO();
+        dto.setName(""); // blank
+        dto.setEmail("john@example.com");
+        dto.setPassword("password123");
+        mockMvc.perform(post("/api/auth/signup/tourists")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isBadRequest());
     }
+
+    // 4 - name not null -> send explicit null, validation failure
     @Test
     @Order(4)
-    void testSignupAsTouristWithExistingEmail_ShouldFail() throws Exception {
-        // Trying to sign up with an email that already exists
-        String duplicateEmailRequest = """
-           {
-            "username": "john_doe",
-            "password": "securePassword123",
-            "email": "john.doe@gmail.com",
-            "phone": "1234567890",
-            "country": "USA",
-            "tourismTypes": ["adventure", "cultural", "eco-tourism"]
-        }
-        """;
-
-        mockMvc.perform(post("/api/touristsignup")
+    void testNameNotNull() throws Exception {
+        String json = """
+            {"name":null,"email":"john@example.com","password":"password123"}
+            """;
+        mockMvc.perform(post("/api/auth/signup/tourists")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(duplicateEmailRequest))
-                .andExpect(status().isConflict())
-                .andExpect(content().string("tourist Email is already registered!"));
+                .content(json))
+                .andExpect(status().isBadRequest());
     }
+
+    // 5 - email not null -> send explicit null, validation failure
     @Test
     @Order(5)
-    void testSignupAsTourGuideWithExistingEmail_ShouldFail() throws Exception {
-         // Mock file representing the approval document
-         MockMultipartFile approvalDocument = new MockMultipartFile(
-            "approvalDocument", // Field name
-            "license.pdf", // File name
-            "application/pdf", // MIME type
-            "dummy file content".getBytes() // File content as bytes
-    );
-
-    mockMvc.perform(multipart("/api/tourguidesignup")
-            .file(approvalDocument)
-            .param("username", "jane_guide")
-            .param("password", "strongPass456")
-            .param("email", "jane.guide@gmail.com")
-            .param("phone", "9876543210")
-            .param("country", "France")
-            .param("tourismTypes", "[\"adventure\", \"cultural\", \"eco-tourism\"]")
-            .contentType(MediaType.MULTIPART_FORM_DATA))
-            .andExpect(status().isConflict());
+    void testEmailNotNull() throws Exception {
+        String json = """
+            {"name":"John","email":null,"password":"password123"}
+            """;
+        mockMvc.perform(post("/api/auth/signup/tourists")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(status().isBadRequest());
     }
+
+    // 6 - password not null -> send explicit null, validation failure
     @Test
     @Order(6)
-    void testSignupAsCompanyWithExistingEmail_ShouldFail() throws Exception {
-        // Create a mock file for the business license document
-        MockMultipartFile businessLicenseDocument = new MockMultipartFile(
-                "approvalDocument", // Field name
-                "license.pdf", // File name
-                "application/pdf", // MIME type
-                "dummy file content".getBytes() // File content as bytes
-        );
+    void testPasswordNotNull() throws Exception {
+        String json = """
+            {"name":"John","email":"john@example.com","password":null}
+            """;
+        mockMvc.perform(post("/api/auth/signup/tourists")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(status().isBadRequest());
+    }
 
-        // Send multipart form-data request
-        mockMvc.perform(multipart("/api/companysignup")
-                .file(businessLicenseDocument)
-                .param("username", "travel_company")
-                .param("password", "securePass789")
-                .param("email", "info@gmail.com")
-                .param("phone", "1234567890")
-                .param("tourismTypes", "[\"adventure\", \"cultural\", \"eco-tourism\"]")
-                .contentType(MediaType.MULTIPART_FORM_DATA))
+    // 7 - bad domain (service-level) -> expect BAD_REQUEST if service validates domain
+    @Test
+    @Order(7)
+    void testBadEmailDomain() throws Exception {
+        TouristSignUpDTO dto = new TouristSignUpDTO();
+        dto.setName("John");
+        dto.setEmail("john.doe@g.com"); // example of a bad domain per your requirements
+        dto.setPassword("password123");
+        mockMvc.perform(post("/api/auth/signup/tourists")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isBadRequest());
+    }
+
+    // 8 - email domain not found (service-level) -> expect BAD_REQUEST if service performs DNS check
+    @Test
+    @Order(8)
+    void testEmailDomainNotFound() throws Exception {
+        TouristSignUpDTO dto = new TouristSignUpDTO();
+        dto.setName("John");
+        dto.setEmail("john@nonexistentdomain.example"); // domain unlikely to resolve
+        dto.setPassword("password123");
+        mockMvc.perform(post("/api/auth/signup/tourists")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isBadRequest());
+    }
+
+    // 9 - existing email -> seed a user then attempt signup and expect CONFLICT
+    @Test
+    @Order(9)
+    void testExistingEmail() throws Exception {
+        // seed existing user (will be rolled back)
+        User existing = new User(null, "Existing", "existing@example.com",
+                passwordEncoder.encode("password123"), Role.TOURIST, null, null, null);
+        userRepository.save(existing);
+
+        TouristSignUpDTO dto = new TouristSignUpDTO();
+        dto.setName("Jane");
+        dto.setEmail("existing@example.com");
+        dto.setPassword("password123");
+        mockMvc.perform(post("/api/auth/signup/tourists")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isConflict());
     }
 
+    // 10 - success -> expect 200 and success message
     @Test
-    @Order(7)
-    void testSignupWithInvalidEmail_ShouldFail() throws Exception {
-        // Invalid email format (missing '@' and domain)
-        String invalidEmailRequest = """
- {
-            "username": "john_doe",
-            "password": "securePassword123",
-            "email": "john.doe",
-            "phone": "1234567890",
-            "country": "USA",
-            "tourismTypes": ["adventure", "cultural", "eco-tourism"]
-        }
-        """;
-
-        mockMvc.perform(post("/api/touristsignup")
+    @Order(10)
+    void testSuccess() throws Exception {
+        TouristSignUpDTO dto = new TouristSignUpDTO();
+        dto.setName("Alice");
+        dto.setEmail("unique@example.com");
+        dto.setPassword("password123");
+        mockMvc.perform(post("/api/auth/signup/tourists")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(invalidEmailRequest))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("{\"email\":\"Invalid email format\"}"));
+                .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Tourist registered successfully"));
     }
-    @Test
-    @Order(8)
-    void testSignupWithInvalidEmailDomain_ShouldFail() throws Exception {
-        // Invalid email format (missing '@' and domain)
-        String invalidEmailRequest = """
- {
-            "username": "john_doe",
-            "password": "securePassword123",
-            "email": "john.doe@g.com",
-            "phone": "1234567890",
-            "country": "USA",
-            "tourismTypes": ["adventure", "cultural", "eco-tourism"]
-        }
-        """;
-
-        mockMvc.perform(post("/api/touristsignup")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(invalidEmailRequest))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("Not Valid Email Domain"));
-    }
-   
-
-
 }
-
-

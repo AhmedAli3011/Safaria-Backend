@@ -9,16 +9,13 @@ import java.util.Optional;
 @Repository
 public interface TourProviderRepository extends JpaRepository<TourProvider, Integer> {
 
-    Optional<TourProvider> findByUsername(String username);
+   
 
-    TourProvider findByEmail(String email);
-
-    Boolean existsByEmail(String email);
-
-    Optional<List<TourProvider>> findByIsApproved(Boolean isApproved);
+    Optional<List<TourProvider>> findByEnabled(Boolean enabled);
 
     Optional<TourProvider> findById(Integer id);
 
-    @Override
-    void deleteById(Integer aLong);
+    Optional<TourProvider> findByUserId(Long userId);
+
+   
 }

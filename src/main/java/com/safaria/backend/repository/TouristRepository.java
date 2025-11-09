@@ -7,15 +7,5 @@ import com.safaria.backend.entity.Tourist;
 
 @Repository
 public interface TouristRepository extends JpaRepository<Tourist, Integer> {
-
-    Optional<Tourist> findByUsername(String username);
-
-    Optional<Tourist> findByEmail(String email);
-
     Optional<Tourist> findById(Integer id);
-
-    Boolean existsByEmail(String email);
-
-    @Override
-    void deleteById(Integer aLong);
 }
