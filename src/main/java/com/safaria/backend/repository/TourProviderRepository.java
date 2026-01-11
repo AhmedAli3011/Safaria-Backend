@@ -1,21 +1,18 @@
 package com.safaria.backend.repository;
 
 import com.safaria.backend.entity.TourProvider;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 @Repository
-public interface TourProviderRepository extends JpaRepository<TourProvider, Integer> {
-
-   
+public interface TourProviderRepository extends JpaRepository<TourProvider, Long> {
 
     Optional<List<TourProvider>> findByEnabled(Boolean enabled);
 
-    Optional<TourProvider> findById(Integer id);
+    Optional<TourProvider> findById(Long id);
 
     Optional<TourProvider> findByUserId(Long userId);
 
-   
 }

@@ -12,14 +12,14 @@ public class TourSchedule {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "TourScheduleID")
-    private Integer TourScheduleID;
+    private Long TourScheduleID;
 
     @ManyToOne
     @JoinColumn(name = "TourID")
     private Tour tour;
 
     @Column(name = "Price")
-    private Double price;
+    private Float price;
 
     @Column(name = "StartDate", nullable = false)
     private LocalDate startDate;

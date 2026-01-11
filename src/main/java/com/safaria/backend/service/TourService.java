@@ -13,6 +13,9 @@
 // import com.safaria.backend.repository.TourProviderRepository;
 // import com.safaria.backend.repository.BookingRepository;
 // import com.safaria.backend.repository.TouristRepository;
+
+// import lombok.RequiredArgsConstructor;
+
 // import org.springframework.beans.factory.annotation.Autowired;
 // import org.springframework.beans.factory.annotation.Value;
 // import org.springframework.data.domain.PageRequest;
@@ -39,31 +42,25 @@
 
 // @EnableScheduling
 // @Service
+// @RequiredArgsConstructor
 // public class TourService {
 
 //     @Value("${file.upload-dir}")
-//     private String UPLOAD_DIRECTORY;
-
+//     private final String UPLOAD_DIRECTORY;
 //     private final TourRepository tourRepository;
 //     private final TourScheduleRepository tourScheduleRepository;
 //     private final TourProviderRepository tourProviderRepository;
 
-//     public TourService(TourRepository tourRepository, TourScheduleRepository tourScheduleRepository, TourProviderRepository tourProviderRepository) {
-//         this.tourRepository = tourRepository;
-//         this.tourScheduleRepository = tourScheduleRepository;
-//         this.tourProviderRepository = tourProviderRepository;
-//     }
-
 //     // ✅ Create Tour with Multiple Schedules
 //     @Transactional
-//     public String createTourWithSchedules(TourRequestDTO dto, List<MultipartFile> images) {
+//     public String createTourWithSchedules(TourRequestDTO tourRequestDTO, List<MultipartFile> images) {
 //         Tour tour = new Tour();
-//         tour.setTitle(dto.getTitle());
-//         tour.setDescription(dto.getDescription());
-//         tour.setDestinationCountry(dto.getDestinationCountry());
-//         tour.setCurrency(dto.getCurrency());
-//         tour.setTourismTypes(dto.getTourismTypes());
-//         TourProvider tourProvider = tourProviderRepository.findById(dto.getTourProviderId())
+//         tour.setTitle(tourRequestDTO.getTitle());
+//         tour.setDescription(tourRequestDTO.getDescription());
+//         tour.setDestinationCountry(tourRequestDTO.getDestinationCountry());
+//         tour.setCurrency(tourRequestDTO.getCurrency());
+//         tour.setTourismTypes(tourRequestDTO.getTourismTypes());
+//         TourProvider tourProvider = tourProviderRepository.findById(tourRequestDTO.getTourProviderId())
 //                 .orElseThrow(() -> new RuntimeException("Tour Provider not found"));
 //         tour.setTourProvider(tourProvider);
 //         // Save images to filesystem and create Image objects for the tour
@@ -71,7 +68,8 @@
 //         tour.setImages(imageEntities);
 //         Tour savedTour = tourRepository.save(tour);
 
-//         List<TourSchedule> schedules = dto.getAvailableDates().stream().map(scheduleDTO -> createSchedule(scheduleDTO, savedTour)).collect(Collectors.toList());
+//         List<TourSchedule> schedules = tourRequestDTO.getAvailableDates().stream()
+//                 .map(scheduleDTO -> createSchedule(scheduleDTO, savedTour)).collect(Collectors.toList());
 //         tourScheduleRepository.saveAll(schedules);
 //         return "tour is created successfully";
 //     }
@@ -95,8 +93,8 @@
 
 //                     // Create Image entity and set imageUrl (relative path)
 //                     Image imageEntity = new Image();
-//                     imageEntity.setImageUrl("tours/" + fileName);  // Store relative path
-//                     imageEntity.setTour(tour);  // Link image to the tour
+//                     imageEntity.setImageUrl("tours/" + fileName); // Store relative path
+//                     imageEntity.setTour(tour); // Link image to the tour
 
 //                     // Add to list
 //                     imageEntities.add(imageEntity);
@@ -187,8 +185,7 @@
 //                     schDto.setEndDate(sch.getEndDate() != null ? sch.getEndDate().toString() : null);
 //                     schDto.setAvailableSeats(sch.getAvailableSeats());
 //                     return schDto;
-//                 }).toList()
-//         );
+//                 }).toList());
 //         // Optionally add more fields as needed
 //         return dto;
 //     }
@@ -245,21 +242,22 @@
 //     }
 //     // ✅ Get 5 Important Tours
 //     // public List<TourImportantDTO> getFiveImportantTours() {
-//     //     List<Tour> tours = tourRepository.findAll().stream().limit(5).collect(Collectors.toList());
-//     //     List<TourImportantDTO> tourImportantDTOList = new ArrayList<>();
+//     // List<Tour> tours =
+//     // tourRepository.findAll().stream().limit(5).collect(Collectors.toList());
+//     // List<TourImportantDTO> tourImportantDTOList = new ArrayList<>();
 
-//     //     for (Tour tour : tours) {
-//     //         TourImportantDTO tourImportantDTO = new TourImportantDTO();
-//     //         tourImportantDTO.setTitle(tour.getTitle());
-//     //         tourImportantDTO.setRating(tour.getRating());
-//     //         tourImportantDTO.setTourID(tour.getTourId().toString());
-//     //         System.out.println(tour.getTourProvider().getUsername());
-//     //         tourImportantDTO.setTourProviderName(tour.getTourProvider().getUsername());
-//     //         tourImportantDTOList.add(tourImportantDTO);
-//     //     }
-//     //     return tourImportantDTOList;
+//     // for (Tour tour : tours) {
+//     // TourImportantDTO tourImportantDTO = new TourImportantDTO();
+//     // tourImportantDTO.setTitle(tour.getTitle());
+//     // tourImportantDTO.setRating(tour.getRating());
+//     // tourImportantDTO.setTourID(tour.getTourId().toString());
+//     // System.out.println(tour.getTourProvider().getUsername());
+//     // tourImportantDTO.setTourProviderName(tour.getTourProvider().getUsername());
+//     // tourImportantDTOList.add(tourImportantDTO);
 //     // }
-//     // ✅ Get Tours by Country and  with Pagination
+//     // return tourImportantDTOList;
+//     // }
+//     // ✅ Get Tours by Country and with Pagination
 //     public List<TourSearchDTO> getToursByCountry(String country, int offset, int size) {
 //         if (country == null || country.trim().isEmpty()) {
 //             throw new IllegalArgumentException("Country must not be null or empty");
@@ -313,7 +311,8 @@
 //     // Method to expire old pending bookings
 //     public void expireOldPendingBookings(long minutesThreshold) {
 //         LocalDateTime cutoff = LocalDateTime.now().minusMinutes(minutesThreshold);
-//         List<Booking> oldPending = bookingRepository.findByStatusAndBookingTimeBefore(Booking.BookingStatus.PENDING, cutoff);
+//         List<Booking> oldPending = bookingRepository.findByStatusAndBookingTimeBefore(Booking.BookingStatus.PENDING,
+//                 cutoff);
 //         for (Booking booking : oldPending) {
 //             booking.setStatus(Booking.BookingStatus.CANCELLED);
 //             // Optionally, restore seats to the schedule:

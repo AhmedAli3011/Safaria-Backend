@@ -9,6 +9,7 @@ import com.safaria.backend.CustomExceptions.AlreadyExistsException;
 import com.safaria.backend.CustomExceptions.InvalidDomainException;
 import com.safaria.backend.DTO.TourProviderRequestDTO;
 import com.safaria.backend.DTO.TouristSignUpDTO;
+import com.safaria.backend.entity.Country;
 import com.safaria.backend.entity.Role;
 import com.safaria.backend.entity.TourProvider;
 import com.safaria.backend.entity.Tourist;
@@ -40,8 +41,8 @@ public class SignUpService {
         
         User user = new User(null, touristSignUpDTO.getName(), touristSignUpDTO.getEmail(), passwordEncoder.encode(touristSignUpDTO.getPassword()),
                 Role.TOURIST, null, null,null);
-        userRepository.save(user);
-        Tourist  tourist = new Tourist(null, user, touristSignUpDTO.getNationality());   
+        Tourist  tourist = new Tourist(null, user, Country.valueOf(touristSignUpDTO.getNationality().toUpperCase()));
+        userRepository.save(user);   
         touristRepository.save(tourist);
 
     }
@@ -70,9 +71,9 @@ public class SignUpService {
         }
         User user = new User(null, tourProviderRequestDTO.getName(), tourProviderRequestDTO.getEmail(),
             passwordEncoder.encode(tourProviderRequestDTO.getPassword()), Role.TOUR_PROVIDER, null, null,null);
-        userRepository.save(user);
         TourProvider tourProvider = new TourProvider(null,user, relativeFilePath, tourProviderRequestDTO.getPhone(),
-        tourProviderRequestDTO.getDescription(), false, tourProviderRequestDTO.getCountry(), LocalDateTime.now());
+        tourProviderRequestDTO.getDescription(), false, Country.valueOf(tourProviderRequestDTO.getCountry().toUpperCase()), LocalDateTime.now());
+        userRepository.save(user);
         tourProviderRepository.save(tourProvider);  
         
        

@@ -77,7 +77,8 @@ public class SecurityConfig {
                                 .cors(cors -> {
                                 }) // Enables CORS with default settings
                                 .authorizeHttpRequests(authz -> authz
-                                                .requestMatchers("/**/auth/**").permitAll()
+                                                .requestMatchers("/api/auth/**").permitAll()
+                                                .requestMatchers("/tour-provider/**").hasRole("TOUR_PROVIDER")
                                                 // .requestMatchers("/api/chatBot").permitAll()
                                                 .anyRequest().authenticated())
                                 .sessionManagement(session -> session

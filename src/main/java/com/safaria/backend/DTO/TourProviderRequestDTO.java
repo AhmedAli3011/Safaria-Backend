@@ -1,11 +1,7 @@
 package com.safaria.backend.DTO;
 
 import lombok.Data;
-
-import java.time.Instant;
-
 import org.springframework.web.multipart.MultipartFile;
-
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -22,7 +18,6 @@ public class TourProviderRequestDTO {
     private String phone;
     @NotBlank(message = "country is mandatory")
     private String country;
-    @NotBlank(message = "BusinessLicense is mandatory")
     private MultipartFile businessLicense;
     private String description;
 

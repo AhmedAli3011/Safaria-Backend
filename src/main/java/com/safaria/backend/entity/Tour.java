@@ -24,7 +24,7 @@ public class Tour {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "TourID")
-    private Integer tourId;
+    private Long tourId;
 
     @Column(name = "Title")
     private String title;
@@ -43,7 +43,7 @@ public class Tour {
     @ElementCollection // To store multiple tourism types
     @CollectionTable(name = "Tour_TourismTypes", joinColumns = @JoinColumn(name = "TourID"))
     @Column(name = "TourismType")
-    private List<String> tourismTypes = new ArrayList<>();
+    private List<TourismTypes> tourismTypes = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "TourProviderID") // Assuming TourProviderID is the foreign key column
@@ -51,5 +51,10 @@ public class Tour {
 
     @OneToMany(mappedBy = "tour", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Image> images = new ArrayList<>();
+
+
+
+
+  
 
 }

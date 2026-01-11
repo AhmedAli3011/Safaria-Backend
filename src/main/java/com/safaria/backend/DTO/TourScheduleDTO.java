@@ -1,13 +1,19 @@
 package com.safaria.backend.DTO;
 
+import java.time.LocalDate;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import lombok.Data;
 
 @Data
 public class TourScheduleDTO {
 
-    private Integer id;
-    private Double price;
-    private String startDate;
-    private String endDate;
+    private Long id;
+    private Float price;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate startDate;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate endDate;
     private Integer availableSeats;
 }

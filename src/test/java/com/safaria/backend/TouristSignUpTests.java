@@ -1,14 +1,11 @@
 package com.safaria.backend;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.safaria.backend.DTO.TouristSignUpDTO;
 import com.safaria.backend.entity.Role;
 import com.safaria.backend.entity.User;
 import com.safaria.backend.repository.UserRepository;
-
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -25,7 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Transactional // each test runs in a transaction and will be rolled back after the test
 @ContextConfiguration(classes = TestConfig.class)
-public class SignUpTests {
+public class TouristSignUpTests {
 
     @Autowired
     private MockMvc mockMvc;

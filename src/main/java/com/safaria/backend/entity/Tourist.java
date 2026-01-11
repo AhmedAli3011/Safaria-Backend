@@ -25,6 +25,7 @@ public class Tourist {
     private User user;
 
     @Column(length = 100)
-    private String nationality;
+    @Enumerated(EnumType.STRING)
+    private Country nationality;
 
 }

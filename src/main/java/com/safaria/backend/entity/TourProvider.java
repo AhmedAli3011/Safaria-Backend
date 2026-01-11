@@ -42,7 +42,8 @@ public class TourProvider {
     private boolean enabled;
 
     @Column(name = "country")
-    private String country;
+    @Enumerated(EnumType.STRING)
+    private Country country;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

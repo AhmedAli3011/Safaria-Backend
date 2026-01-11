@@ -7,7 +7,7 @@ import org.springframework.data.repository.query.Param;
 import com.safaria.backend.DTO.TourSearchDTO;
 import com.safaria.backend.entity.Tour;
 
-public interface TourRepository extends JpaRepository<Tour, Integer> {
+public interface TourRepository extends JpaRepository<Tour, Long> {
 
     @Query(value = """
             SELECT 

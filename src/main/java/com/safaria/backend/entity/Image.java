@@ -18,9 +18,6 @@ public class Image {
     @Column(name = "ImageUrl", nullable = false)
     private String imageUrl;
 
-    @Column(name = "Description", columnDefinition = "TEXT")
-    private String description;
-
     @ManyToOne
     @JoinColumn(name = "TourID", nullable = false)
     private Tour tour;
