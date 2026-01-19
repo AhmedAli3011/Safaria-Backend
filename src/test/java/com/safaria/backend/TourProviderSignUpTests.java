@@ -3,6 +3,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import java.nio.file.Files;
+
 import com.safaria.backend.entity.Role;
 import com.safaria.backend.entity.TourProvider;
 import com.safaria.backend.entity.User;
@@ -247,5 +250,6 @@ public class TourProviderSignUpTests {
         System.out.println("License Path: " + uploadDir + licensePath);
         java.nio.file.Path path = java.nio.file.Paths.get(uploadDir+ "/" + licensePath);
         assertTrue(java.nio.file.Files.exists(path), "Business license file should exist in filesystem: " + licensePath);
+        Files.deleteIfExists(path);
     }
 }

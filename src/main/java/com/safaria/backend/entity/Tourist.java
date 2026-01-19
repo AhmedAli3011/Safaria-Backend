@@ -1,6 +1,6 @@
 package com.safaria.backend.entity;
 
-import com.safaria.backend.DTO.TouristSignUpDTO;
+
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;

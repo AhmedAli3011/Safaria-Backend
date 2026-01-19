@@ -23,12 +23,15 @@ import com.safaria.backend.entity.User;
 import com.safaria.backend.repository.TourProviderRepository;
 import com.safaria.backend.repository.UserRepository;
 
+import jakarta.transaction.Transactional;
+
 
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ContextConfiguration(classes = TestConfig.class)
+@Transactional
 public class LogInTests {
     @Autowired
     private  MockMvc mockMvc;
@@ -51,13 +54,13 @@ public class LogInTests {
             passwordEncoder.encode("123456789"), Role.TOUR_PROVIDER, null, null,null);
         user =userRepository.save(user);
         TourProvider tourProvider = new TourProvider(null,user, "Bla Bla Bla", "01555524305",
-        "we provide best tours", true, Country.valueOf("Egypt"), LocalDateTime.now());
+        "we provide best tours", true, Country.valueOf("EGYPT"), LocalDateTime.now());
         tourProviderRepository.save(tourProvider); 
         user = new User(null, "Ahmed Ali", "ahmed.provider2@gmail.com",
             passwordEncoder.encode("123456789"), Role.TOUR_PROVIDER, null, null,null);
         user =userRepository.save(user);
          tourProvider = new TourProvider(null,user, "Bla Bla Bla","01555524305",
-        "we provide best tours", false, Country.valueOf("Egypt"), LocalDateTime.now());
+        "we provide best tours", false, Country.valueOf("EGYPT"), LocalDateTime.now());
         tourProviderRepository.save(tourProvider); 
 
         user = new User(null, "Ahmed Ali", "ahmed.tourist@gmail.com",

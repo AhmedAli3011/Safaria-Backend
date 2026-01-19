@@ -170,7 +170,7 @@ public class TouristSignUpTests {
     void testSuccess() throws Exception {
         TouristSignUpDTO dto = new TouristSignUpDTO();
         dto.setName("Alice");
-        dto.setEmail("unique@example.com");
+        dto.setEmail("unique@gmail.com");
         dto.setPassword("password123");
         mockMvc.perform(post("/api/auth/signup/tourists")
                 .contentType(MediaType.APPLICATION_JSON)

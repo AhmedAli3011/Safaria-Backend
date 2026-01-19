@@ -41,7 +41,7 @@ public class SignUpService {
         
         User user = new User(null, touristSignUpDTO.getName(), touristSignUpDTO.getEmail(), passwordEncoder.encode(touristSignUpDTO.getPassword()),
                 Role.TOURIST, null, null,null);
-        Tourist  tourist = new Tourist(null, user, Country.valueOf(touristSignUpDTO.getNationality().toUpperCase()));
+        Tourist  tourist = new Tourist(null, user, touristSignUpDTO.getNationality()!=null?Country.valueOf(touristSignUpDTO.getNationality().toUpperCase()):null);
         userRepository.save(user);   
         touristRepository.save(tourist);
 
